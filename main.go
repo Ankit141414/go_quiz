@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -18,28 +19,38 @@ func main() {
 	defer file.Close()
 
 	read := csv.NewReader(file)
-
 	result, err := read.ReadAll()
 
-	for i, _ := range result {
+	buffer := bufio.NewReader(os.Stdin)
+	input := make(chan string)
 
+	go func() {
+		value, _ := buffer.ReadString('\n')
+		input <- value
+	}()
+
+	send(result, input)
+
+}
+
+func send(result [][]string, input chan string) {
+
+	for i := range result {
 		fmt.Printf("#Problem %d:%s =  \n", i+1, result[i][0])
+		select {
+		case chvalue := <-input:
+			trimmed := strings.TrimSpace(chvalue)
+			answer := strings.TrimSpace(result[i][1])
 
-		buffer := bufio.NewReader(os.Stdin)
-		value, err := buffer.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
+			if trimmed == answer {
+				fmt.Println("Correct")
+			} else {
+				fmt.Println("wrong")
+			}
 
-		trimmed := strings.TrimSpace(value)
-		answer := strings.TrimSpace(result[i][1])
-
-		if trimmed == answer {
-			fmt.Println("Correct")
-		} else {
-			fmt.Println("wrong")
+		case <-time.After(4 * time.Second):
+			fmt.Println("\ntime limit!")
 		}
 
 	}
-
 }
