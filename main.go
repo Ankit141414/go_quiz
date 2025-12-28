@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -25,15 +26,20 @@ func main() {
 	input := make(chan string)
 
 	go func() {
-		value, _ := buffer.ReadString('\n')
-		input <- value
+		for {
+			value, _ := buffer.ReadString('\n')
+			input <- value
+		}
 	}()
 
-	send(result, input)
+	flags := flag.Int("time", 30, "timer")
+	flag.Parse()
+
+	send(result, input, *flags)
 
 }
 
-func send(result [][]string, input chan string) {
+func send(result [][]string, input chan string, flags int) {
 
 	for i := range result {
 		fmt.Printf("#Problem %d:%s =  \n", i+1, result[i][0])
@@ -48,7 +54,7 @@ func send(result [][]string, input chan string) {
 				fmt.Println("wrong")
 			}
 
-		case <-time.After(4 * time.Second):
+		case <-time.After(time.Duration(flags) * time.Second):
 			fmt.Println("\ntime limit!")
 		}
 
