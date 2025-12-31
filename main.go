@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var score int
+
 func main() {
 	file, err := os.Open("problems.csv")
 	if err != nil {
@@ -42,14 +44,18 @@ func main() {
 func send(result [][]string, input chan string, flags int) {
 
 	for i := range result {
+
 		fmt.Printf("#Problem %d:%s =  \n", i+1, result[i][0])
 		select {
+
 		case chvalue := <-input:
 			trimmed := strings.TrimSpace(chvalue)
 			answer := strings.TrimSpace(result[i][1])
 
 			if trimmed == answer {
 				fmt.Println("Correct")
+				score = score + 1
+
 			} else {
 				fmt.Println("wrong")
 			}
@@ -59,4 +65,6 @@ func send(result [][]string, input chan string, flags int) {
 		}
 
 	}
+
+	fmt.Printf("Your total sore is %d", score)
 }
